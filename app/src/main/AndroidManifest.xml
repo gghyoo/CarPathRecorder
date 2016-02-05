@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="app.gavin.carpathrecorder">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,12 +11,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!--
         <receiver android:name=".BootReceiver" android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </receiver>
+        -->
 
         <activity
             android:name=".MainActivity"
@@ -27,8 +32,12 @@
             </intent-filter>
         </activity>
 
-    </application>
+        <service android:name=".LocationService">
+            <intent-filter >
+                <action android:name="app.gavin.carpathrecorder.action.LOCATION"/>
+            </intent-filter>
+        </service>
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
+    </application>
 
 </manifest>

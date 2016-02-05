@@ -15,5 +15,24 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="Hello World!"
+        android:id="@+id/textView" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/set_notification"
+        android:textAllCaps="false"
+        android:id="@+id/setup_notification"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_service"
+        android:textAllCaps="false"
+        android:id="@+id/start_service"
+        android:layout_below="@+id/setup_notification"
+        android:layout_alignParentLeft="true" />
 </RelativeLayout>

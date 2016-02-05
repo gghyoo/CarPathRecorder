@@ -1,11 +1,9 @@
 package app.gavin.carpathrecorder;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -13,7 +11,26 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+import java.lang.ref.WeakReference;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static class MessageHandle extends Handler {
+        WeakReference<MainActivity> mActivity;
+
+        MessageHandle(MainActivity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what)
+            {
+                case 0:break;
+            }
+            super.handleMessage(msg);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,14 +39,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        (findViewById(R.id.start_service)).setOnClickListener(this);
     }
 
     @Override
@@ -52,5 +62,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if(id == R.id.start_service){
+            if(!LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName())) {
+                Intent intent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
+                intent.setPackage(getPackageName());
+                startService(intent);
+            }
+            else{
+                Log.d("CarPathRecorder", getString(R.string.service_is_running));
+            }
+        }
     }
 }
