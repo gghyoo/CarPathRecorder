@@ -1,6 +1,7 @@
 package app.gavin.carpathrecorder;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -14,16 +15,17 @@ import org.json.JSONObject;
  * Created by Gavin on 2016/2/6.
  */
 public class LocationDatabase {
-    static final String mDataBaseName = "/data/data/app.gavin.carpathrecorder/databases/car_path_recorder.db";
+    static final String mDataBaseName = "car_path_recorder.db";
     static final String mTableName = "location";
     static final String TAG = "LocationDatabase";
 
     SQLiteDatabase mDatabase = null;
-    Boolean mDbLock = true;
+    final Boolean mDbLock = true;
 
-    public LocationDatabase() {
+    public LocationDatabase(Context context) {
         //打开数据库
-        mDatabase = SQLiteDatabase.openOrCreateDatabase(mDataBaseName, null);
+        mDatabase = SQLiteDatabase.openOrCreateDatabase(
+                context.getDatabasePath(mDataBaseName).getPath(), null);
         if(mDatabase != null) {
             //如果数据表不存在，就创建
             String sql = "create table if not exists " + mTableName + "(" +

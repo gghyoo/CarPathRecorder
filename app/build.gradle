@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
     defaultConfig {
         applicationId "app.gavin.carpathrecorder"
         minSdkVersion 16
@@ -24,10 +24,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.0.1'
-    compile 'com.android.support:design:23.0.1'
-    compile 'cz.msebera.android:httpclient:4.3.6'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
     compile files('libs/AMap_Location_v2.3.0_20160112.jar')
     compile files('libs/android-async-http-1.4.9.jar')
     compile files('libs/AMap_2DMap_V2.8.1_20160202.jar')
+    compile files('libs/httpclient-4.4.1.1.jar')
 }

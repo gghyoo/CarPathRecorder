@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -36,6 +37,7 @@ public class LocationService extends IntentService implements AMapLocationListen
     private static final String SITE_URL = "http://s.imscv.com/cpr/";
     private static final String ACTION_URL = SITE_URL + "Recorder/Index/";
     private static final String SERVICE_ACTION = "app.gavin.carpathrecorder.action.LOCATION";
+    private static final int NOTIFICATION_ID = 11;
 
     private static final int MAX_LOCATION_DELAY = 10;
     private static final int MIN_LOCATION_DELAY = 1;
@@ -48,6 +50,7 @@ public class LocationService extends IntentService implements AMapLocationListen
 
     Notification mNotification;
     RemoteViews mNotificationRemoteView;
+    NotificationManager mNotificationManager;
 
     private AMapLocationClient mLocationClient = null;
     private AMapLocationClientOption mLocationOption = null;
@@ -124,8 +127,10 @@ public class LocationService extends IntentService implements AMapLocationListen
             mNotificationRemoteView.setTextViewText(R.id.speed, df.format(mLocationInfo.get("speed")) + " m/s");
             mNotificationRemoteView.setTextViewText(R.id.direction, df.format(mLocationInfo.get("bearing")) + "");
             mNotificationRemoteView.setTextViewText(R.id.satellite, mLocationInfo.get("satellites") + "");
+
         }
-        startForeground(7788, mNotification);
+
+        mNotificationManager.notify(NOTIFICATION_ID, mNotification);
     }
     private void setupNotification() {
         //初始化通知Remote View
@@ -134,11 +139,8 @@ public class LocationService extends IntentService implements AMapLocationListen
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setContent(mNotificationRemoteView)
                 .setTicker(getText(R.string.path_is_recording)) //通知首次出现在通知栏，带上升动画效果的
-                .setPriority(Notification.PRIORITY_DEFAULT) //设置该通知优先级
-                        //  .setAutoCancel(true)//设置这个标志当用户单击面板就可以让通知将自动取消
-                .setOngoing(true)//ture，设置他为一个正在进行的通知。他们通常是用来表示一个后台任务,用户积极参与(如播放音乐)或以某种方式正在等待,因此占用设备(如一个文件下载,同步操作,主动网络连接)
-                        //.setDefaults(Notification.De)//向通知添加声音、闪灯和振动效果的最简单、最一致的方式是使用当前的用户默认设置，使用defaults属性，可以组合
-                        //Notification.DEFAULT_ALL  Notification.DEFAULT_SOUND 添加声音 // requires VIBRATE permission
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setOngoing(true)
                 .setSmallIcon(R.drawable.small_logo);//设置通知小ICON
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -196,10 +198,14 @@ public class LocationService extends IntentService implements AMapLocationListen
     @Override
     public void onCreate() {
         super.onCreate();
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         setupNotification();
         updateNotification();
+        startForeground(NOTIFICATION_ID, mNotification);
+
         setupAmpSdk();
-        mLocalDatabase = new LocationDatabase();
+
+        mLocalDatabase = new LocationDatabase(getApplicationContext());
         LocationService.invokeTimerService(getApplicationContext());
     }
     @Override
