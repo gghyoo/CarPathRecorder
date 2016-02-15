@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         // 自定义系统定位小蓝点
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory
-                .fromResource(R.drawable.location_marker));// 设置小蓝点的图标
+                .fromResource(R.drawable.car));// 设置小蓝点的图标
         // myLocationStyle.anchor(int,int)//设置小蓝点的锚点
         //myLocationStyle.strokeWidth(1.0f);// 设置圆形的边框粗细
         aMap.setMyLocationStyle(myLocationStyle);
