@@ -29,31 +29,36 @@
                 android:layout_gravity="center_vertical"
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/total"/>
+                android:text="@string/local_recorded_count"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="2"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/total_local_record_count"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/uploaded_count"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="2"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/total_uploaded_record_count"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/mileage"
-                android:id="@+id/total_mileage"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/record_count"
-                android:id="@+id/total_record_count"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/record_time"
-                android:id="@+id/total_record_time"/>
+                android:text="@string/status_ok"
+                android:id="@+id/location_status"/>
+
         </LinearLayout>
         <TextView
             android:layout_width="match_parent"
@@ -70,31 +75,66 @@
                 android:layout_gravity="center_vertical"
                 android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/current"/>
+                android:text="@string/latitude_longitude"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/mileage"
-                android:id="@+id/current_mileage"/>
+                android:id="@+id/location"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/altitude"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/record_count"
-                android:id="@+id/current_record_count"/>
+                android:id="@+id/altitude"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/speed"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="@string/record_time"
-                android:id="@+id/current_record_time"/>
+                android:id="@+id/speed"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/direction"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/direction"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/satellite"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/satellite"/>
         </LinearLayout>
     </LinearLayout>
 

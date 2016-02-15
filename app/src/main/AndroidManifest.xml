@@ -2,7 +2,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="app.gavin.carpathrecorder">
 
+    <permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" android:protectionLevel="normal" />
+    <uses-permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    
+    <!--用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--用于访问GPS定位-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!--获取运营商信息，用于支持提供运营商信息相关的接口-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!--用于访问wifi网络信息，wifi信息会用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <!--这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位-->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <!--用于访问网络，网络定位需要上网-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--用于读取手机当前的状态-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <!--写入扩展存储，向扩展卡写入数据，用于写入缓存定位数据-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+
 
     <application
         android:allowBackup="true"
@@ -11,15 +34,23 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!--
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="9ec5c72123e864bfe1fe586c11f3713b" />
+
+
         <receiver android:name=".BootReceiver" android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.PROVIDER_CHANGED"/>
+                <action android:name="com.flyaudio.startflysystemui" />
+                <action android:name="app.gavin.carpathrecorder.TIMER"/>
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
         </receiver>
-        -->
 
         <activity
             android:name=".MainActivity"
@@ -32,11 +63,13 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".LocationService">
+        <service android:name=".LocationService" android:exported="true">
             <intent-filter >
                 <action android:name="app.gavin.carpathrecorder.action.LOCATION"/>
             </intent-filter>
         </service>
+
+        <service android:name="com.amap.api.location.APSService"/>
 
     </application>
 

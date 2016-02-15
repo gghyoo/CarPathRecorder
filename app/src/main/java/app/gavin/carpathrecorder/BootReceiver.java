@@ -6,49 +6,27 @@ import android.content.Intent;
 import android.util.Log;
 
 public class BootReceiver extends BroadcastReceiver {
+    final String TAG = "BootReceiver";
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (action.equals("android.intent.action.BOOT_COMPLETED")) {
-            Log.d("BootReceiver", "From Gavin's App: system boot completed");
 
-            // context, AutoRun.class
-            Intent newIntent = new Intent(context, MainActivity.class);
+        Log.d(TAG, "Received Action:" + action);
 
-			/* MyActivity action defined in AndroidManifest.xml */
-            newIntent.setAction("android.intent.action.MAIN");
+       // Intent newIntent = new Intent(context, MainActivity.class);
 
-			/* MyActivity category defined in AndroidManifest.xml */
-            newIntent.addCategory("android.intent.category.LAUNCHER");
+       // newIntent.setAction("android.intent.action.MAIN");
 
-			/*
-			 * If activity is not launched in Activity environment, this flag is
-			 * mandatory to set
-			 */
-            newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      //  newIntent.addCategory("android.intent.category.LAUNCHER");
 
-			/* if you want to start a service, follow below method */
-            context.startActivity(newIntent);
+      //  newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+       // context.startActivity(newIntent);
+
+        if(!LocationService.isServiceRunning(context, LocationService.class.getName())) {
+            Intent serviceIntent = new Intent(context, LocationService.class);
+            context.startService(serviceIntent);
         }
-        else if(action.equals("android.intent.action.USER_PRESENT"))
-        {
-            Log.d("User_present", "android.intent.action.USER_PRESENT: User Present");
-
-            Intent newIntent = new Intent(context, MainActivity.class);
-
-			/* MyActivity action defined in AndroidManifest.xml */
-            newIntent.setAction("android.intent.action.MAIN");
-
-			/* MyActivity category defined in AndroidManifest.xml */
-            newIntent.addCategory("android.intent.category.LAUNCHER");
-
-			/*
-			 * If activity is not launched in Activity environment, this flag is
-			 * mandatory to set
-			 */
-            newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-			/* if you want to start a service, follow below method */
-            context.startActivity(newIntent);
-        }
+        else
+            Log.d(TAG, context.getString(R.string.service_is_running));
     }
 }

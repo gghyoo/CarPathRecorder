@@ -3,8 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="app.gavin.carpathrecorder.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_start_service"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/start_service"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_close_service"
+        android:orderInCategory="100"
+        android:title="@string/close_service"
+        app:showAsAction="never" />
+
 </menu>

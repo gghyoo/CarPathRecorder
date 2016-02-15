@@ -18,6 +18,7 @@ android {
     }
     productFlavors {
     }
+
 }
 
 dependencies {
@@ -25,4 +26,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.android.support:design:23.0.1'
+    compile 'cz.msebera.android:httpclient:4.3.6'
+    compile files('libs/AMap_Location_v2.3.0_20160112.jar')
+    compile files('libs/android-async-http-1.4.9.jar')
+    compile files('libs/AMap_2DMap_V2.8.1_20160202.jar')
 }
