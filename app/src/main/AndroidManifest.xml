@@ -36,11 +36,11 @@
 
         <!-- 笔记本电脑Key -->
         <meta-data
-            android:name="com.amap.api.v2.apikey_"
+            android:name="com.amap.api.v2.apikey"
             android:value="9ec5c72123e864bfe1fe586c11f3713b" />
         <!-- 台式机Key -->
         <meta-data
-            android:name="com.amap.api.v2.apikey"
+            android:name="com.amap.api.v2.apikey_"
             android:value="ed0f55598d056d4624a8bdb2a7a7ef8a" />
 
         <receiver android:name=".BootReceiver" android:label="@string/app_name">

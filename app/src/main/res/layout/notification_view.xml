@@ -63,7 +63,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="1px"
-            android:background="@color/colorPrimary"/>
+            android:background="@android:color/darker_gray"/>
         <LinearLayout
             android:orientation="horizontal"
             android:layout_weight="1"
