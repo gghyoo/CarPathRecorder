@@ -8,7 +8,7 @@
     tools:context="app.gavin.carpathrecorder.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <com.amap.api.maps2d.MapView
+    <com.amap.api.maps.MapView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map"
         android:layout_width="fill_parent"

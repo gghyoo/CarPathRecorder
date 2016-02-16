@@ -19,6 +19,13 @@ android {
     productFlavors {
     }
 
+    sourceSets { main { jni.srcDirs = ['src/main/jniLibs/'] } }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFile = new File(output.outputFile.parent, defaultConfig.applicationId + "-" + buildType.name + "-v" + defaultConfig.versionName + "-" + defaultConfig.versionCode + ".apk" );
+        }
+    }
 }
 
 dependencies {
@@ -28,6 +35,6 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile files('libs/AMap_Location_v2.3.0_20160112.jar')
     compile files('libs/android-async-http-1.4.9.jar')
-    compile files('libs/AMap_2DMap_V2.8.1_20160202.jar')
     compile files('libs/httpclient-4.4.1.1.jar')
+    compile files('libs/AMap_3DMap_V3.2.0.1_20160122.jar')
 }

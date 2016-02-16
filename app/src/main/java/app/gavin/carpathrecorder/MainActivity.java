@@ -13,11 +13,15 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
-import com.amap.api.maps2d.AMap;
-import com.amap.api.maps2d.LocationSource;
-import com.amap.api.maps2d.MapView;
-import com.amap.api.maps2d.model.BitmapDescriptorFactory;
-import com.amap.api.maps2d.model.MyLocationStyle;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdate;
+import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.MyLocationStyle;
+
 
 public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, LocationSource,AMapLocationListener {
 
@@ -27,8 +31,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private MapView mapView;
     private AMap aMap;
     private OnLocationChangedListener mListener;
-    private AMapLocationClient mlocationClient;
+    private AMapLocationClient mLocationClient;
     private AMapLocationClientOption mLocationOption;
+    private CameraUpdate mDefaultCameraUpdate = CameraUpdateFactory.zoomTo(18);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,14 +120,18 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory
                 .fromResource(R.drawable.car));// 设置小蓝点的图标
+        myLocationStyle.radiusFillColor(Color.argb(40, 0, 0, 200));
         // myLocationStyle.anchor(int,int)//设置小蓝点的锚点
         //myLocationStyle.strokeWidth(1.0f);// 设置圆形的边框粗细
         aMap.setMyLocationStyle(myLocationStyle);
         aMap.setTrafficEnabled(true);
         aMap.setLocationSource(this);// 设置定位监听
+
         aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
-        // aMap.setMyLocationType()
+        aMap.setMyLocationType(AMap.LOCATION_TYPE_MAP_FOLLOW);
+
+        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.52, 113.93), 15));
     }
 
     @Override
@@ -134,31 +143,31 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     @Override
     public void activate(OnLocationChangedListener onLocationChangedListener) {
         mListener = onLocationChangedListener;
-        if (mlocationClient == null) {
-            mlocationClient = new AMapLocationClient(this);
+        if (mLocationClient == null) {
+            mLocationClient = new AMapLocationClient(this);
             mLocationOption = new AMapLocationClientOption();
             //设置定位监听
-            mlocationClient.setLocationListener(this);
+            mLocationClient.setLocationListener(this);
             //设置为高精度定位模式
             mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
             //设置定位参数
-            mlocationClient.setLocationOption(mLocationOption);
+            mLocationClient.setLocationOption(mLocationOption);
             // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
             // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
             // 在定位结束后，在合适的生命周期调用onDestroy()方法
             // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
-            mlocationClient.startLocation();
+            mLocationClient.startLocation();
         }
     }
 
     @Override
     public void deactivate() {
         mListener = null;
-        if (mlocationClient != null) {
-            mlocationClient.stopLocation();
-            mlocationClient.onDestroy();
+        if (mLocationClient != null) {
+            mLocationClient.stopLocation();
+            mLocationClient.onDestroy();
         }
-        mlocationClient = null;
+        mLocationClient = null;
     }
 
     @Override
@@ -167,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             if (aMapLocation != null
                     && aMapLocation.getErrorCode() == 0) {
                 mListener.onLocationChanged(aMapLocation);// 显示系统小蓝点
+                aMap.moveCamera(mDefaultCameraUpdate);
             } else {
                 String errText = "定位失败," + aMapLocation.getErrorCode()+ ": " + aMapLocation.getErrorInfo();
                 Log.e("AmapErr",errText);
