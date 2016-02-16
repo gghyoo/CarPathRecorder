@@ -66,6 +66,7 @@ android {
                 def appName = "${applicationId}_${versionName}_${buildType}_${versionCode}.apk"
 
                 println("copy from " + fromFile + " to " + intoFile + appName)
+
                 // copy --> rename
                 copy {
                     from fromFile
