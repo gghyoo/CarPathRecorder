@@ -7,7 +7,7 @@ def getVersionCode = { ->
             commandLine 'git', 'rev-list', '--all', '--count'
             standardOutput = stdout
         }
-        return Integer.parseInt(stdout.toString().trim())+400
+        return Integer.parseInt(stdout.toString().trim())
     }
     catch (ignored) {
         return -1;
@@ -55,30 +55,45 @@ android {
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
                 def fileName = outputFile.name;
                 def fromFile = "./build/outputs/apk/" + fileName
-                def intoFile = "./apks/"
+                def intoFile = "./../apks/"
+                def filePath = "apks/"
 
                 def applicationId = android.defaultConfig.applicationId
                 def versionName = android.defaultConfig.versionName
                 def time = new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
-                def buildType = buildType.name
+                def currentBuildType = buildType.name
                 def versionCode = defaultConfig.versionCode
 
-                def appName = "${applicationId}_${versionName}_${buildType}_${versionCode}.apk"
+                def appName = "${applicationId}_${currentBuildType}"
+                def infoString  = appName + "@(" + versionName + "_" + versionCode + "_" + time + ")\r\n"
 
-                println("copy from " + fromFile + " to " + intoFile + appName)
-
-                // copy --> rename
+                //删除原来的旧文件
+                def apkFiles = fileTree(dir: intoFile, include: '**/*.apk')
+                apkFiles.each {File file ->
+                    if(file.name.contains(currentBuildType)){
+                        println "!! delete " + file.name
+                        file.delete()
+                    }
+                }
+                //复制新的文件
+                println("-- copy from\r\n\t" + fromFile + " \r\nto\r\n\t" + intoFile + appName + ".apk")
                 copy {
                     from fromFile
                     into intoFile
                     rename {
-                        appName
+                        appName + ".apk"
                     }
                 }
+
+                //写入文件信息
+                def file = new File(filePath + "info.txt")
+                if(file.text.contains(currentBuildType))
+                    file.text = infoString
+                else
+                    file.text += infoString
             }
         }
     }
-
 }
 
 dependencies {
