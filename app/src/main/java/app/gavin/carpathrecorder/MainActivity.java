@@ -28,6 +28,9 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 for(String line : lines){
                     if(line.contains(APK_CHANEL)){
                         String [] s = line.split("@");
-                        String nv = s[1].substring(2, s[1].indexOf('-'));
+                        String nv = s[1].substring(0, s[1].indexOf('_'));
                         if(nv.charAt(0) == 'v')
                             nv = nv.substring(1);
                         try {
@@ -71,15 +74,25 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                                 HttpClient.asyncGet(apk, null, new FileAsyncHttpResponseHandler(getApplicationContext()) {
                                     @Override
                                     public void onSuccess(int i, Header[] headers, File file) {
+                                        File tmpFile = new File("/sdcard/update");
+                                        if (!tmpFile.exists()) {
+                                            tmpFile.mkdir();
+                                        }
+                                        copyFile(file, "/sdcard/update/temp.apk");
                                         Intent intent = new Intent();
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         intent.setAction(android.content.Intent.ACTION_VIEW);
-                                        intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
+                                        intent.setDataAndType(Uri.fromFile(new File("/sdcard/update/temp.apk")),"application/vnd.android.package-archive");
                                         startActivity(intent);
                                     }
                                     @Override
                                     public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
                                         Log.e(TAG, "Get Update apk failed!");
+                                    }
+
+                                    @Override
+                                    public void onProgress(long bytesWritten, long totalSize) {
+                                        super.onProgress(bytesWritten, totalSize);
                                     }
                                 });
                             }
@@ -96,6 +109,30 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             Log.e(TAG, "Get Update info failed!");
         }
     };
+
+    public void copyFile(File oldfile, String newPath) {
+        try {
+            int bytesum = 0;
+            int byteread = 0;
+            if (oldfile.exists()) { //文件存在时
+                InputStream inStream = new FileInputStream(oldfile.getPath()); //读入原文件
+                FileOutputStream fs = new FileOutputStream(newPath);
+                byte[] buffer = new byte[1444];
+                int length;
+                while ( (byteread = inStream.read(buffer)) != -1) {
+                    bytesum += byteread; //字节数 文件大小
+                    System.out.println(bytesum);
+                    fs.write(buffer, 0, byteread);
+                }
+                inStream.close();
+            }
+        }
+        catch (Exception e) {
+            System.out.println("复制单个文件操作出错");
+            e.printStackTrace();
+
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
