@@ -42,7 +42,6 @@ public class LocationService extends IntentService implements AMapLocationListen
     private static final int MAX_LOCATION_DELAY = 10;
     private static final int MIN_LOCATION_DELAY = 1;
 
-    private SyncHttpClient mHttpClient = new SyncHttpClient();
     private boolean mHttpBusyFlag = false;
     private Cursor mUnUploadedRecordCursor = null;
 
@@ -86,7 +85,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         mHttpBusyFlag = true;
         mUnUploadedRecordCursor = c;
         String url = ACTION_URL + "addRecords";
-        mHttpClient.post(url, params, new AsyncHttpResponseHandler() {
+        HttpClient.syncPost(url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers,
                                   byte[] responseBody) {

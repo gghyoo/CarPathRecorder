@@ -65,7 +65,7 @@ android {
                 def versionCode = defaultConfig.versionCode
 
                 def appName = "${applicationId}_${currentBuildType}"
-                def infoString  = appName + "@(" + versionName + "_" + versionCode + "_" + time + ")\r\n"
+                def infoString  = appName + "@" + versionName + "_" + versionCode + "_" + time + "\r\n"
 
                 //删除原来的旧文件
                 def apkFiles = fileTree(dir: intoFile, include: '**/*.apk')

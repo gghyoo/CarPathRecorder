@@ -1,7 +1,10 @@
 package app.gavin.carpathrecorder;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,11 +24,20 @@ import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.FileAsyncHttpResponseHandler;
+
+import java.io.File;
+
+import cz.msebera.android.httpclient.Header;
 
 
 public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, LocationSource,AMapLocationListener {
 
     final String TAG = "CarPathRecorder";
+    static final String APK_URL = "http://gghyoo.github.io/apks/";
+    static final String APK_CHANEL = "debug";
+    static final String INFO_FILE_NAME = "info.txt";
     PopupMenu mPopupMenu;
 
     private MapView mapView;
@@ -34,6 +46,56 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private AMapLocationClient mLocationClient;
     private AMapLocationClientOption mLocationOption;
     private CameraUpdate mDefaultCameraUpdate = CameraUpdateFactory.zoomTo(18);
+
+    AsyncHttpResponseHandler mAsyncHttpResponseHandler = new AsyncHttpResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+            if (statusCode == 200) {
+                String response = new String(responseBody);
+                Log.d(TAG, response);
+                String[] lines = response.split("\n");
+                for(String line : lines){
+                    if(line.contains(APK_CHANEL)){
+                        String [] s = line.split("@");
+                        String nv = s[1].substring(2, s[1].indexOf('-'));
+                        if(nv.charAt(0) == 'v')
+                            nv = nv.substring(1);
+                        try {
+                            PackageInfo pi = getApplicationContext().getPackageManager()
+                                    .getPackageInfo(getApplicationContext().getPackageName(), 0);
+                            String iv = pi.versionName;
+                            if(iv.charAt(0) == 'v')
+                                iv = iv.substring(1);
+                            if(nv.compareTo(iv) > 0){//比较新
+                                String apk = APK_URL + s[0] + ".apk";
+                                HttpClient.asyncGet(apk, null, new FileAsyncHttpResponseHandler(getApplicationContext()) {
+                                    @Override
+                                    public void onSuccess(int i, Header[] headers, File file) {
+                                        Intent intent = new Intent();
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        intent.setAction(android.content.Intent.ACTION_VIEW);
+                                        intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
+                                        startActivity(intent);
+                                    }
+                                    @Override
+                                    public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
+                                        Log.e(TAG, "Get Update apk failed!");
+                                    }
+                                });
+                            }
+                        } catch (PackageManager.NameNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, byte[] bytes, Throwable throwable) {
+            Log.e(TAG, "Get Update info failed!");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +153,10 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             LocationService.cancleAlarmManager(getApplicationContext());
             return true;
         }
-
+        else if(id == R.id.action_update_apk){
+            HttpClient.asyncGet(APK_URL + INFO_FILE_NAME, null, mAsyncHttpResponseHandler);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
