@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -30,6 +31,7 @@ import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import cz.msebera.android.httpclient.Header;
@@ -50,87 +52,29 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private AMapLocationClientOption mLocationOption;
     private CameraUpdate mDefaultCameraUpdate = CameraUpdateFactory.zoomTo(18);
 
-    AsyncHttpResponseHandler mAsyncHttpResponseHandler = new AsyncHttpResponseHandler() {
-        @Override
-        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-            if (statusCode == 200) {
-                String response = new String(responseBody);
-                Log.d(TAG, response);
-                String[] lines = response.split("\n");
-                for(String line : lines){
-                    if(line.contains(APK_CHANEL)){
-                        String [] s = line.split("@");
-                        String nv = s[1].substring(0, s[1].indexOf('_'));
-                        if(nv.charAt(0) == 'v')
-                            nv = nv.substring(1);
-                        try {
-                            PackageInfo pi = getApplicationContext().getPackageManager()
-                                    .getPackageInfo(getApplicationContext().getPackageName(), 0);
-                            String iv = pi.versionName;
-                            if(iv.charAt(0) == 'v')
-                                iv = iv.substring(1);
-                            if(nv.compareTo(iv) > 0){//比较新
-                                String apk = APK_URL + s[0] + ".apk";
-                                HttpClient.asyncGet(apk, null, new FileAsyncHttpResponseHandler(getApplicationContext()) {
-                                    @Override
-                                    public void onSuccess(int i, Header[] headers, File file) {
-                                        File tmpFile = new File("/sdcard/update");
-                                        if (!tmpFile.exists()) {
-                                            tmpFile.mkdir();
-                                        }
-                                        copyFile(file, "/sdcard/update/temp.apk");
-                                        Intent intent = new Intent();
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        intent.setAction(android.content.Intent.ACTION_VIEW);
-                                        intent.setDataAndType(Uri.fromFile(new File("/sdcard/update/temp.apk")),"application/vnd.android.package-archive");
-                                        startActivity(intent);
-                                    }
-                                    @Override
-                                    public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
-                                        Log.e(TAG, "Get Update apk failed!");
-                                    }
+    private String mNewApkUrl = "";
 
-                                    @Override
-                                    public void onProgress(long bytesWritten, long totalSize) {
-                                        super.onProgress(bytesWritten, totalSize);
-                                    }
-                                });
-                            }
-                        } catch (PackageManager.NameNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
+    public void ShowSnakeBar(String text, int time, String actionText){
+        final Snackbar snackbar = Snackbar.make(this.mapView, text, time);
+        if(actionText != null)
+            snackbar.setAction(actionText, this);
+        snackbar.show();
+    }
 
-        @Override
-        public void onFailure(int statusCode, Header[] headers, byte[] bytes, Throwable throwable) {
-            Log.e(TAG, "Get Update info failed!");
-        }
-    };
-
-    public void copyFile(File oldfile, String newPath) {
+    public void copyFile(File oldFile, String newPath) {
         try {
-            int bytesum = 0;
-            int byteread = 0;
-            if (oldfile.exists()) { //文件存在时
-                InputStream inStream = new FileInputStream(oldfile.getPath()); //读入原文件
+            int byteRead = 0;
+            if (oldFile.exists()) { //文件存在时
+                InputStream inStream = new FileInputStream(oldFile.getPath()); //读入原文件
                 FileOutputStream fs = new FileOutputStream(newPath);
                 byte[] buffer = new byte[1444];
-                int length;
-                while ( (byteread = inStream.read(buffer)) != -1) {
-                    bytesum += byteread; //字节数 文件大小
-                    System.out.println(bytesum);
-                    fs.write(buffer, 0, byteread);
-                }
+                while ((byteRead = inStream.read(buffer)) != -1)
+                    fs.write(buffer, 0, byteRead);
                 inStream.close();
             }
         }
         catch (Exception e) {
-            System.out.println("复制单个文件操作出错");
-            e.printStackTrace();
-
+            Log.e(TAG, "复制单个文件操作出错");
         }
     }
 
@@ -191,7 +135,44 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             return true;
         }
         else if(id == R.id.action_update_apk){
-            HttpClient.asyncGet(APK_URL + INFO_FILE_NAME, null, mAsyncHttpResponseHandler);
+            HttpClient.asyncGet(APK_URL + INFO_FILE_NAME, null, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    if (statusCode == 200) {
+                        String response = new String(responseBody);
+                        Log.d(TAG, response);
+                        String[] lines = response.split("\n");
+                        for(String line : lines){
+                            if(line.contains(APK_CHANEL)){
+                                String [] s = line.split("@");
+                                String nv = s[1].substring(0, s[1].indexOf('_'));
+                                if(nv.charAt(0) == 'v')
+                                    nv = nv.substring(1);
+                                try {
+                                    PackageInfo pi = getApplicationContext().getPackageManager()
+                                            .getPackageInfo(getApplicationContext().getPackageName(), 0);
+                                    String iv = pi.versionName;
+                                    if(iv.charAt(0) == 'v')
+                                        iv = iv.substring(1);
+                                    if(nv.compareTo(iv) > 0){//比较新
+                                        mNewApkUrl = APK_URL + s[0] + ".apk";
+                                        ShowSnakeBar("检测到最新版本:" + nv, Snackbar.LENGTH_LONG, "开始下载");
+                                    }
+                                    else
+                                        ShowSnakeBar("当前为最新版本", Snackbar.LENGTH_LONG, null);
+                                } catch (PackageManager.NameNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] bytes, Throwable throwable) {
+                    ShowSnakeBar("检查更新失败", Snackbar.LENGTH_LONG, null);
+                }
+            });
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -240,6 +221,41 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     public void onClick(View v) {
         if(v.getId() == R.id.fab)
             mPopupMenu.show();
+        else
+        {
+            String name = v.getClass().getName();
+            String path = getApplicationContext().getExternalFilesDir("update").getPath();
+            File dir = new File(path);
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            File apkFile = new File(path + "/" + getApplicationContext().getPackageName() + ".apk");
+            HttpClient.asyncGet(mNewApkUrl, null, new FileAsyncHttpResponseHandler(apkFile) {
+                @Override
+                public void onSuccess(int i, Header[] headers, File file) {
+                    String command  = "chmod 777 " + file.getPath();
+                    Runtime runtime = Runtime.getRuntime();
+                    try {
+                        runtime.exec(command);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Intent intent = new Intent();
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setAction(android.content.Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+                    startActivity(intent);
+                }
+                @Override
+                public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
+                    Log.e(TAG, "Get Update apk failed!");
+                }
+                @Override
+                public void onProgress(long bytesWritten, long totalSize) {
+                    super.onProgress(bytesWritten, totalSize);
+                }
+            });
+        }
     }
 
     @Override

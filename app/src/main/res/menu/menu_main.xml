@@ -17,6 +17,4 @@
         android:orderInCategory="100"
         android:title="@string/update_apk"
         app:showAsAction="never" />
-
-
 </menu>
