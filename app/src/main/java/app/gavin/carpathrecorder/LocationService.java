@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.RemoteViews;
 
 import com.amap.api.location.AMapLocation;
@@ -35,7 +36,7 @@ public class LocationService extends IntentService implements AMapLocationListen
 
     private static final String TAG = "LocationService";
     private static final String SITE_URL = "http://s.imscv.com/cpr/";
-    private static final String ACTION_URL = SITE_URL + "Recorder/Index/";
+    public static final String ACTION_URL = SITE_URL + "Recorder/Index/";
     private static final String SERVICE_ACTION = "app.gavin.carpathrecorder.action.LOCATION";
     private static final int NOTIFICATION_ID = 11;
 
@@ -85,7 +86,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         mHttpBusyFlag = true;
         mUnUploadedRecordCursor = c;
         String url = ACTION_URL + "addRecords";
-        HttpClient.syncPost(url, params, new AsyncHttpResponseHandler() {
+        HttpClient.syncPost(getApplicationContext(), url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers,
                                   byte[] responseBody) {
@@ -128,8 +129,6 @@ public class LocationService extends IntentService implements AMapLocationListen
             mNotificationRemoteView.setTextViewText(R.id.satellite, mLocationInfo.get("satellites") + "");
 
         }
-
-        mNotificationManager.notify(NOTIFICATION_ID, mNotification);
     }
     private void setupNotification() {
         //初始化通知Remote View

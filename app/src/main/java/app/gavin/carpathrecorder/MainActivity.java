@@ -11,7 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -25,14 +28,15 @@ import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.text.DecimalFormat;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -40,42 +44,131 @@ import cz.msebera.android.httpclient.Header;
 public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, LocationSource,AMapLocationListener {
 
     final String TAG = "CarPathRecorder";
-    static final String APK_URL = "http://gghyoo.github.io/apks/";
     static final String APK_CHANEL = "debug";
-    static final String INFO_FILE_NAME = "info.txt";
     PopupMenu mPopupMenu;
 
     private MapView mapView;
     private AMap aMap;
     private OnLocationChangedListener mListener;
     private AMapLocationClient mLocationClient;
-    private AMapLocationClientOption mLocationOption;
-    private CameraUpdate mDefaultCameraUpdate = CameraUpdateFactory.zoomTo(18);
+    LinearLayout mDownloadInfoBar;
 
     private String mNewApkUrl = "";
 
-    public void ShowSnakeBar(String text, int time, String actionText){
+    public void ShowSnakeBar(String text, int time, String actionText, View.OnClickListener listener){
         final Snackbar snackbar = Snackbar.make(this.mapView, text, time);
         if(actionText != null)
-            snackbar.setAction(actionText, this);
+            snackbar.setAction(actionText, listener);
         snackbar.show();
     }
 
-    public void copyFile(File oldFile, String newPath) {
-        try {
-            int byteRead = 0;
-            if (oldFile.exists()) { //文件存在时
-                InputStream inStream = new FileInputStream(oldFile.getPath()); //读入原文件
-                FileOutputStream fs = new FileOutputStream(newPath);
-                byte[] buffer = new byte[1444];
-                while ((byteRead = inStream.read(buffer)) != -1)
-                    fs.write(buffer, 0, byteRead);
-                inStream.close();
+    public void ShowSnakeBar(String text, int time){
+        final Snackbar snackbar = Snackbar.make(this.mapView, text, time);
+        snackbar.show();
+    }
+
+    private void DownloadApk(){
+        File dir = getApplicationContext().getExternalFilesDir("update");
+        if(dir == null){
+            ShowSnakeBar("无法读写文件，可能没有安装SD卡!", Snackbar.LENGTH_LONG);
+            return;
+        }else if (!dir.exists() && !dir.mkdir()) {
+            ShowSnakeBar("创建下载临时文件失败，请检查外部存储设备是否正常", Snackbar.LENGTH_LONG);
+            return;
+        }
+        File apkFile = new File(dir.getPath() + "/" + getApplicationContext().getPackageName() + ".apk");
+        mDownloadInfoBar.setVisibility(View.VISIBLE);
+        ((ProgressBar)findViewById(R.id.downloadProgressBar)).setProgress(0);
+        HttpClient.asyncGet(getApplicationContext(), mNewApkUrl, new FileAsyncHttpResponseHandler(apkFile) {
+            long mStartTime = 0;
+            DecimalFormat mFormater = new DecimalFormat("0.00");
+
+            @Override
+            public void onStart() {
+                super.onStart();
+                mStartTime = System.currentTimeMillis();
             }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "复制单个文件操作出错");
-        }
+
+            @Override
+            public void onSuccess(int i, Header[] headers, File file) {
+                mDownloadInfoBar.setVisibility(View.GONE);
+                Intent intent = new Intent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
+                ShowSnakeBar("更新程序下载失败! StatusCode：" + i, Snackbar.LENGTH_LONG);
+            }
+
+            @Override
+            public void onProgress(long bytesWritten, long totalSize) {
+                super.onProgress(bytesWritten, totalSize);
+                int percent = (int) ((100 * bytesWritten) / totalSize);
+                long curTime = System.currentTimeMillis();
+                float speed = ((float) bytesWritten) / (curTime - mStartTime);
+                ((ProgressBar) findViewById(R.id.downloadProgressBar)).setProgress(percent);
+                String info = percent + "%  " + mFormater.format(speed) + "k/s";
+                ((TextView) findViewById(R.id.downloadTextInfoView)).setText(info);
+            }
+        });
+    }
+
+    private void GetApkInfo(){
+        HttpClient.asyncGet(getApplicationContext(), LocationService.ACTION_URL + "getApkInfo", new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                if (statusCode == 200) {
+                    try {
+                        boolean result = response.getBoolean("Result");
+                        if(!result){
+                            ShowSnakeBar("服务器文件出错！", Snackbar.LENGTH_LONG);
+                            return;
+                        }
+                        JSONArray ja = response.getJSONArray("Data");
+                        int cnt = ja.length();
+                        for(int i = 0 ; i < cnt ; i ++){
+                            JSONObject jo = ja.getJSONObject(i);
+                            if(jo.getString("BuildType").equals(APK_CHANEL)){
+                                PackageInfo pi = getApplicationContext().getPackageManager()
+                                        .getPackageInfo(getApplicationContext().getPackageName(), 0);
+                                String iv = pi.versionName;
+                                if(iv.charAt(0) == 'v')
+                                    iv = iv.substring(1);
+                                String nv =jo.getString("VersionName");
+                                if(nv.charAt(0) == 'v')
+                                    iv = iv.substring(1);
+                                if(nv.compareTo(iv) > 0){//比较新
+                                    mNewApkUrl = LocationService.ACTION_URL + "getApk/package/" + jo.getString("Package") + "/channel/" + APK_CHANEL;
+                                    ShowSnakeBar("检测到最新版本:" + nv, Snackbar.LENGTH_LONG, "开始下载", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            DownloadApk();
+                                        }
+                                    });
+                                }
+                                else
+                                    ShowSnakeBar("当前为最新版本", Snackbar.LENGTH_LONG);
+                                return;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        ShowSnakeBar("服务器错误！", Snackbar.LENGTH_LONG);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                ShowSnakeBar("检查更新失败", Snackbar.LENGTH_LONG);
+            }
+        });
     }
 
     @Override
@@ -96,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             setUpMap();
         }
         startLocationService();
+
+        mDownloadInfoBar = (LinearLayout) findViewById(R.id.downloadInfoBar);
+        mDownloadInfoBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -135,44 +231,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             return true;
         }
         else if(id == R.id.action_update_apk){
-            HttpClient.asyncGet(APK_URL + INFO_FILE_NAME, null, new AsyncHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                    if (statusCode == 200) {
-                        String response = new String(responseBody);
-                        Log.d(TAG, response);
-                        String[] lines = response.split("\n");
-                        for(String line : lines){
-                            if(line.contains(APK_CHANEL)){
-                                String [] s = line.split("@");
-                                String nv = s[1].substring(0, s[1].indexOf('_'));
-                                if(nv.charAt(0) == 'v')
-                                    nv = nv.substring(1);
-                                try {
-                                    PackageInfo pi = getApplicationContext().getPackageManager()
-                                            .getPackageInfo(getApplicationContext().getPackageName(), 0);
-                                    String iv = pi.versionName;
-                                    if(iv.charAt(0) == 'v')
-                                        iv = iv.substring(1);
-                                    if(nv.compareTo(iv) > 0){//比较新
-                                        mNewApkUrl = APK_URL + s[0] + ".apk";
-                                        ShowSnakeBar("检测到最新版本:" + nv, Snackbar.LENGTH_LONG, "开始下载");
-                                    }
-                                    else
-                                        ShowSnakeBar("当前为最新版本", Snackbar.LENGTH_LONG, null);
-                                } catch (PackageManager.NameNotFoundException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                @Override
-                public void onFailure(int statusCode, Header[] headers, byte[] bytes, Throwable throwable) {
-                    ShowSnakeBar("检查更新失败", Snackbar.LENGTH_LONG, null);
-                }
-            });
+            GetApkInfo();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -204,8 +263,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory
                 .fromResource(R.drawable.car));// 设置小蓝点的图标
         myLocationStyle.radiusFillColor(Color.argb(40, 0, 0, 200));
-        // myLocationStyle.anchor(int,int)//设置小蓝点的锚点
-        //myLocationStyle.strokeWidth(1.0f);// 设置圆形的边框粗细
         aMap.setMyLocationStyle(myLocationStyle);
         aMap.setTrafficEnabled(true);
         aMap.setLocationSource(this);// 设置定位监听
@@ -217,45 +274,27 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.52, 113.93), 15));
     }
 
+    private void updateInfos(AMapLocation location){
+        LinearLayout gpsBar =(LinearLayout)findViewById(R.id.gpsInfoBar);
+        gpsBar.setVisibility(View.VISIBLE);
+        if(location.getLocationType() != AMapLocation.LOCATION_TYPE_SAME_REQ)
+        {
+            DecimalFormat df = new DecimalFormat("0.00");
+            ((TextView)findViewById(R.id.locationText)).setText("(" + df.format(location.getLatitude())
+                    + " , " + df.format(location.getLongitude()) + ")");
+            ((TextView)findViewById(R.id.accuracyText)).setText(df.format(location.getAccuracy()) + " m");
+            ((TextView)findViewById(R.id.altitudeText)).setText(df.format(location.getAltitude()) + " m");
+            ((TextView)findViewById(R.id.directionText)).setText(df.format(location.getBearing()) + "°");
+            ((TextView)findViewById(R.id.speedText)).setText(df.format(location.getSpeed() * 3.6) + " km/h");
+            ((TextView)findViewById(R.id.satelliteText)).setText(location.getSatellites() + "");
+        }
+    }
+
+
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.fab)
             mPopupMenu.show();
-        else
-        {
-            String name = v.getClass().getName();
-            String path = getApplicationContext().getExternalFilesDir("update").getPath();
-            File dir = new File(path);
-            if (!dir.exists()) {
-                dir.mkdir();
-            }
-            File apkFile = new File(path + "/" + getApplicationContext().getPackageName() + ".apk");
-            HttpClient.asyncGet(mNewApkUrl, null, new FileAsyncHttpResponseHandler(apkFile) {
-                @Override
-                public void onSuccess(int i, Header[] headers, File file) {
-                    String command  = "chmod 777 " + file.getPath();
-                    Runtime runtime = Runtime.getRuntime();
-                    try {
-                        runtime.exec(command);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Intent intent = new Intent();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setAction(android.content.Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-                    startActivity(intent);
-                }
-                @Override
-                public void onFailure(int i, Header[] headers, Throwable throwable, File file) {
-                    Log.e(TAG, "Get Update apk failed!");
-                }
-                @Override
-                public void onProgress(long bytesWritten, long totalSize) {
-                    super.onProgress(bytesWritten, totalSize);
-                }
-            });
-        }
     }
 
     @Override
@@ -263,13 +302,13 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         mListener = onLocationChangedListener;
         if (mLocationClient == null) {
             mLocationClient = new AMapLocationClient(this);
-            mLocationOption = new AMapLocationClientOption();
+            AMapLocationClientOption option = new AMapLocationClientOption();
             //设置定位监听
             mLocationClient.setLocationListener(this);
             //设置为高精度定位模式
-            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
             //设置定位参数
-            mLocationClient.setLocationOption(mLocationOption);
+            mLocationClient.setLocationOption(option);
             // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
             // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
             // 在定位结束后，在合适的生命周期调用onDestroy()方法
@@ -294,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             if (aMapLocation != null
                     && aMapLocation.getErrorCode() == 0) {
                 mListener.onLocationChanged(aMapLocation);// 显示系统小蓝点
-                aMap.moveCamera(mDefaultCameraUpdate);
+                updateInfos(aMapLocation);
             } else {
                 String errText = "定位失败," + aMapLocation.getErrorCode()+ ": " + aMapLocation.getErrorInfo();
                 Log.e("AmapErr",errText);
