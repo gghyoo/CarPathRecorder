@@ -18,6 +18,8 @@
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+
 
     <application
         android:allowBackup="true"
@@ -33,11 +35,17 @@
 
         <receiver android:name=".BootReceiver" android:label="@string/app_name">
             <intent-filter android:priority="0x7fffffff">
+                <action android:name="app.gavin.carpathrecorder.action.TIMER"/>
+            </intent-filter>
+            <intent-filter android:priority="0x7fffffff">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.USER_PRESENT" />
                 <action android:name="android.intent.action.PROVIDER_CHANGED"/>
                 <action android:name="com.flyaudio.startflysystemui" />
-                <action android:name="app.gavin.carpathrecorder.TIMER"/>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED"/>
+                <action android:name="android.location.PROVIDERS_CHANGED" />
+                <action android:name="android.location.GPS_FIX_CHANGE" />
+                <action android:name="android.location.GPS_ENABLED_CHANGE" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter android:priority="0x7fffffff">

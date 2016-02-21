@@ -2,7 +2,8 @@
     <string name="app_name">车辆路径记录系统</string>
     <string name="start_service">开启服务</string>
     <string name="close_service">关闭服务</string>
-    <string name="service_is_running">服务正在运行中...</string>
+    <string name="service_is_running">服务正在运行中…</string>
+    <string name="service_started">服务已经启动</string>
     <string name="service_is_not_running">服务未运行</string>
     <string name="local_recorded_count">本地已记录:</string>
     <string name="uploaded_count">已上传:</string>
@@ -14,6 +15,10 @@
     <string name="speed">速度:</string>
     <string name="direction">航向:</string>
     <string name="satellite">卫星:</string>
-    <string name="path_is_recording">正在记录路径...</string>
+    <string name="path_is_recording">正在记录路径…</string>
     <string name="update_apk">检查更新</string>
+    <string name="meter">%1$s&#160;m</string>
+    <string name="degree">%1$s&#160;°</string>
+    <string name="kmph">%1$s&#160;km/h</string>
+    <string name="two_values">%1$s,%2$s</string>
 </resources>

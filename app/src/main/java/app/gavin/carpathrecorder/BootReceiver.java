@@ -23,8 +23,10 @@ public class BootReceiver extends BroadcastReceiver {
        // context.startActivity(newIntent);
 
         if(!LocationService.isServiceRunning(context, LocationService.class.getName())) {
-            Intent serviceIntent = new Intent(context, LocationService.class);
+            Intent serviceIntent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
+            serviceIntent.setPackage("app.gavin.carpathrecorder");
             context.startService(serviceIntent);
+            Log.d(TAG, context.getString(R.string.service_started));
         }
         else
             Log.d(TAG, context.getString(R.string.service_is_running));

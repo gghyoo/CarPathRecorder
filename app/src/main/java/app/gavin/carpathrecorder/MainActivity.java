@@ -28,6 +28,7 @@ import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.autonavi.amap.mapcore.Convert;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -240,7 +241,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     boolean startLocationService(){
         if(LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName()))
             return false;
-
         Intent intent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
         intent.setPackage(getPackageName());
         startService(intent);
@@ -250,7 +250,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     boolean stopLocationService(){
         if(!LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName()))
             return false;
-
         Intent intent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
         intent.setPackage(getPackageName());
         stopService(intent);
@@ -261,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         // 自定义系统定位小蓝点
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory
-                .fromResource(R.drawable.car));// 设置小蓝点的图标
+                .fromResource(R.drawable.location_marker));// 设置小蓝点的图标
         myLocationStyle.radiusFillColor(Color.argb(40, 0, 0, 200));
         aMap.setMyLocationStyle(myLocationStyle);
         aMap.setTrafficEnabled(true);
@@ -270,8 +269,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
         aMap.setMyLocationType(AMap.LOCATION_TYPE_MAP_FOLLOW);
-
-        aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.52, 113.93), 15));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(18));
     }
 
     private void updateInfos(AMapLocation location){
@@ -279,17 +277,15 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         gpsBar.setVisibility(View.VISIBLE);
         if(location.getLocationType() != AMapLocation.LOCATION_TYPE_SAME_REQ)
         {
-            DecimalFormat df = new DecimalFormat("0.00");
-            ((TextView)findViewById(R.id.locationText)).setText("(" + df.format(location.getLatitude())
-                    + " , " + df.format(location.getLongitude()) + ")");
-            ((TextView)findViewById(R.id.accuracyText)).setText(df.format(location.getAccuracy()) + " m");
-            ((TextView)findViewById(R.id.altitudeText)).setText(df.format(location.getAltitude()) + " m");
-            ((TextView)findViewById(R.id.directionText)).setText(df.format(location.getBearing()) + "°");
-            ((TextView)findViewById(R.id.speedText)).setText(df.format(location.getSpeed() * 3.6) + " km/h");
-            ((TextView)findViewById(R.id.satelliteText)).setText(location.getSatellites() + "");
+            DecimalFormat df = new DecimalFormat("0.0");
+            ((TextView)findViewById(R.id.locationText)).setText(getString(R.string.two_values,df.format(location.getLatitude()), df.format(location.getLongitude())));
+            ((TextView)findViewById(R.id.accuracyText)).setText(getString(R.string.meter,((int)location.getAccuracy())));
+            ((TextView)findViewById(R.id.altitudeText)).setText(getString(R.string.meter,(int)(location.getAltitude())));
+            ((TextView)findViewById(R.id.directionText)).setText(getString(R.string.degree,((int)(location.getBearing()))));
+            ((TextView)findViewById(R.id.speedText)).setText(getString(R.string.kmph, df.format(location.getSpeed() * 3.6)));
+            ((TextView)findViewById(R.id.satelliteText)).setText(String.valueOf(location.getSatellites()));
         }
     }
-
 
     @Override
     public void onClick(View v) {

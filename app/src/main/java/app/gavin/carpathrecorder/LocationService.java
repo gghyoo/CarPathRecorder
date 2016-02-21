@@ -11,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.SystemClock;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
@@ -38,6 +39,7 @@ public class LocationService extends IntentService implements AMapLocationListen
     private static final String SITE_URL = "http://s.imscv.com/cpr/";
     public static final String ACTION_URL = SITE_URL + "Recorder/Index/";
     private static final String SERVICE_ACTION = "app.gavin.carpathrecorder.action.LOCATION";
+    private static final String ALARM_ACTION = "app.gavin.carpathrecorder.action.TIMER";
     private static final int NOTIFICATION_ID = 11;
 
     private static final int MAX_LOCATION_DELAY = 10;
@@ -100,11 +102,9 @@ public class LocationService extends IntentService implements AMapLocationListen
                         mUnUploadedRecordCursor = null;
                         updateNotification();
                     }
-
                     mHttpBusyFlag = false;
                 }
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers,
                                   byte[] responseBody, Throwable error) {
@@ -127,8 +127,8 @@ public class LocationService extends IntentService implements AMapLocationListen
             mNotificationRemoteView.setTextViewText(R.id.speed, df.format(mLocationInfo.get("speed")) + " m/s");
             mNotificationRemoteView.setTextViewText(R.id.direction, df.format(mLocationInfo.get("bearing")) + "");
             mNotificationRemoteView.setTextViewText(R.id.satellite, mLocationInfo.get("satellites") + "");
-
         }
+        mNotificationManager.notify(NOTIFICATION_ID, mNotification);
     }
     private void setupNotification() {
         //初始化通知Remote View
@@ -159,7 +159,6 @@ public class LocationService extends IntentService implements AMapLocationListen
         }
         return interval;
     }
-
     public static boolean isServiceRunning(Context context, String serviceClassName){
         final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE); //这个value取任意大于1的值，但返回的列表大小可能比这个值小。
@@ -173,22 +172,18 @@ public class LocationService extends IntentService implements AMapLocationListen
     }
     public static void invokeTimerService(Context context){
         Log.d("LocationService", "LocationService wac called..");
-        PendingIntent alarmSender = null;
-        Intent startIntent = new Intent(context, LocationService.class);
-        startIntent.setAction(LocationService.SERVICE_ACTION);
-        try {
-            alarmSender = PendingIntent.getService(context, 0, startIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        } catch (Exception e) {
-            Log.e("LocationService", "failed to start " + e.toString());
-        }
-        AlarmManager am = (AlarmManager) context.getSystemService(Activity.ALARM_SERVICE);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60 * 1000, alarmSender);
+        AlarmManager am = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(context, BootReceiver.class);
+        intent.setAction(ALARM_ACTION);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        long now = System.currentTimeMillis();
+        am.setInexactRepeating(AlarmManager.RTC_WAKEUP, now, 30000, pi);
     }
-    public static void cancleAlarmManager(Context context){
+    public static void cancleAlarmManager(Context context) {
         Log.d("LocationService", "cancleAlarmManager to start ");
-        Intent intent = new Intent(context,LocationService.class);
-        intent.setAction(LocationService.SERVICE_ACTION);
-        PendingIntent pendingIntent=PendingIntent.getService(context, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(context,BootReceiver.class);
+        intent.setAction(LocationService.ALARM_ACTION);
+        PendingIntent pendingIntent=PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm=(AlarmManager)context.getSystemService(Activity.ALARM_SERVICE);
         alarm.cancel(pendingIntent);
     }
@@ -204,7 +199,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         setupAmpSdk();
 
         mLocalDatabase = new LocationDatabase(getApplicationContext());
-        LocationService.invokeTimerService(getApplicationContext());
+        invokeTimerService(getApplicationContext());
     }
     @Override
     public void onDestroy() {
