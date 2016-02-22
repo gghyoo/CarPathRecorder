@@ -23,8 +23,12 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -88,16 +92,19 @@ public class LocationService extends IntentService implements AMapLocationListen
         mHttpBusyFlag = true;
         mUnUploadedRecordCursor = c;
         String url = ACTION_URL + "addRecords";
-        HttpClient.syncPost(getApplicationContext(), url, params, new AsyncHttpResponseHandler() {
+        HttpClient.syncPost(getApplicationContext(), url, params, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers,
-                                  byte[] responseBody) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
                 if (statusCode == 200) {
-                    String response = new String(responseBody);
-                    Log.d(TAG, response);
-
+                    boolean result = false;
+                    try {
+                        result = response.getBoolean("Result");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     //更新数据库内容
-                    if (response.equals("Ok") && mUnUploadedRecordCursor != null) {
+                    if (result && mUnUploadedRecordCursor != null) {
                         mLastUpdateID = mLocalDatabase.updateUploadStatus(mUnUploadedRecordCursor);
                         mUnUploadedRecordCursor = null;
                         updateNotification();
@@ -106,10 +113,10 @@ public class LocationService extends IntentService implements AMapLocationListen
                 }
             }
             @Override
-            public void onFailure(int statusCode, Header[] headers,
-                                  byte[] responseBody, Throwable error) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
                 mHttpBusyFlag = false;
-                error.printStackTrace();// 把错误信息打印出轨迹来
+                throwable.printStackTrace();// 把错误信息打印出轨迹来
             }
         });
     }
