@@ -2,24 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="app.gavin.carpathrecorder">
 
-    <permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" android:protectionLevel="normal" />
-    <uses-permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" />
+    <permission
+        android:name="android.permissiion.FLYAUDIOUI.BROADCAST"
+        android:protectionLevel="normal" />
 
+    <uses-permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-
 
     <application
         android:allowBackup="true"
@@ -33,35 +34,39 @@
             android:name="com.amap.api.v2.apikey"
             android:value="9ec5c72123e864bfe1fe586c11f3713b" />
 
-        <receiver android:name=".BootReceiver" android:label="@string/app_name">
+        <receiver
+            android:name=".BootReceiver"
+            android:label="@string/app_name">
             <intent-filter android:priority="0x7fffffff">
-                <action android:name="app.gavin.carpathrecorder.action.TIMER"/>
+                <action android:name="app.gavin.carpathrecorder.action.TIMER" />
             </intent-filter>
             <intent-filter android:priority="0x7fffffff">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.USER_PRESENT" />
-                <action android:name="android.intent.action.PROVIDER_CHANGED"/>
+                <action android:name="android.intent.action.PROVIDER_CHANGED" />
                 <action android:name="com.flyaudio.startflysystemui" />
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED"/>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
                 <action android:name="android.location.PROVIDERS_CHANGED" />
                 <action android:name="android.location.GPS_FIX_CHANGE" />
                 <action android:name="android.location.GPS_ENABLED_CHANGE" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter android:priority="0x7fffffff">
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED"/>
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-                <action android:name="android.intent.action.ANY_DATA_STATE"/>
-                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.ANY_DATA_STATE" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
             </intent-filter>
             <intent-filter android:priority="0x7fffffff">
-                <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
-                <action android:name="android.intent.action.MEDIA_REMOVED"/>
-                <action android:name="android.intent.action.MEDIA_CHECKING"/>
-                <action android:name="android.intent.action.MEDIA_EJECT"/>
-                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
-                <data android:scheme="file"/>
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
+                <action android:name="android.intent.action.MEDIA_REMOVED" />
+                <action android:name="android.intent.action.MEDIA_CHECKING" />
+                <action android:name="android.intent.action.MEDIA_EJECT" />
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
+
+                <data android:scheme="file" />
             </intent-filter>
         </receiver>
 
@@ -77,14 +82,26 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".LocationService" android:exported="true">
-            <intent-filter >
-                <action android:name="app.gavin.carpathrecorder.action.LOCATION"/>
+        <service
+            android:name=".LocationService"
+            android:exported="true"
+            android:persistent="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="app.gavin.carpathrecorder.action.LOCATION" />
             </intent-filter>
         </service>
 
-        <service android:name="com.amap.api.location.APSService"/>
+        <service
+            android:name=".DaemonService"
+            android:exported="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="app.gavin.carpathrecorder.action.DAEMON" />
+            </intent-filter>
+        </service>
 
+        <service android:name="com.amap.api.location.APSService" />
     </application>
 
 </manifest>
