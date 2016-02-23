@@ -54,8 +54,8 @@ public class LocationService extends IntentService implements AMapLocationListen
 
     private boolean mStopFlag = false;
 
-    Notification mNotification;
     RemoteViews mNotificationRemoteView;
+    NotificationCompat.Builder mNotificationBuilder;
     NotificationManager mNotificationManager;
 
     private AMapLocationClient mLocationClient = null;
@@ -112,6 +112,7 @@ public class LocationService extends IntentService implements AMapLocationListen
                     mHttpBusyFlag = false;
                 }
             }
+
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
@@ -135,14 +136,14 @@ public class LocationService extends IntentService implements AMapLocationListen
             mNotificationRemoteView.setTextViewText(R.id.direction, df.format(mLocationInfo.get("bearing")) + "");
             mNotificationRemoteView.setTextViewText(R.id.satellite, mLocationInfo.get("satellites") + "");
         }
-        mNotificationManager.notify(NOTIFICATION_ID, mNotification);
+        mNotificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
     }
     private void setupNotification() {
         //初始化通知Remote View
         mNotificationRemoteView = new RemoteViews(getPackageName(), R.layout.notification_view);
         //实例化通再来管理器
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setContent(mNotificationRemoteView)
+        mNotificationBuilder = new NotificationCompat.Builder(this);
+        mNotificationBuilder.setContent(mNotificationRemoteView)
                 .setTicker(getText(R.string.path_is_recording)) //通知首次出现在通知栏，带上升动画效果的
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setOngoing(true)
@@ -151,8 +152,8 @@ public class LocationService extends IntentService implements AMapLocationListen
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-        builder.setContentIntent(pendingIntent);
-        mNotification = builder.build();
+        mNotificationBuilder.setContentIntent(pendingIntent);
+        startForeground(NOTIFICATION_ID, mNotificationBuilder.build());
     }
     private int getLocationDelay(AMapLocation location){
         int interval;
@@ -186,8 +187,8 @@ public class LocationService extends IntentService implements AMapLocationListen
         long now = System.currentTimeMillis();
         am.setInexactRepeating(AlarmManager.RTC_WAKEUP, now, 30000, pi);
     }
-    public static void cancleAlarmManager(Context context) {
-        Log.d("LocationService", "cancleAlarmManager to start ");
+    public static void cancelAlarmManager(Context context) {
+        Log.d("LocationService", "cancel AlarmManager to start ");
         Intent intent = new Intent(context,BootReceiver.class);
         intent.setAction(LocationService.ALARM_ACTION);
         PendingIntent pendingIntent=PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -200,8 +201,8 @@ public class LocationService extends IntentService implements AMapLocationListen
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         setupNotification();
+
         updateNotification();
-        startForeground(NOTIFICATION_ID, mNotification);
 
         setupAmpSdk();
 
@@ -213,6 +214,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         super.onDestroy();
 
         if (null != mLocationClient) {
+            mStopFlag = true;
             mLocationClient.onDestroy();
             mLocationClient = null;
             mLocationOption = null;

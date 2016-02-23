@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         else if(id == R.id.action_close_service){
             if(!stopLocationService())
                 Log.d(TAG, getString(R.string.service_is_not_running));
-            LocationService.cancleAlarmManager(getApplicationContext());
+            LocationService.cancelAlarmManager(getApplicationContext());
             return true;
         }
         else if(id == R.id.action_update_apk){
