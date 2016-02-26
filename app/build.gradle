@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+
 def getVersionCode = { ->
     try {
         def stdout = new ByteArrayOutputStream()
@@ -57,4 +58,8 @@ dependencies {
     compile files('libs/httpclient-4.4.1.1.jar')
     compile files('libs/AMap_3DMap_V3.2.0.1_20160122.jar')
     compile(name:'fileobserver', ext:'aar')
+}
+
+build.doLast{
+	println "\r\n===========\r\n\tVersionName:" + getVersionName() + "\r\n\tversionCode:" + getVersionCode() + "\r\n===========";
 }
