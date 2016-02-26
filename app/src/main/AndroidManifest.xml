@@ -3,7 +3,7 @@
     package="app.gavin.carpathrecorder">
 
     <permission
-        android:name="android.permissiion.FLYAUDIOUI.BROADCAST"
+        android:name="android.permission.FLYAUDIOUI.BROADCAST"
         android:protectionLevel="normal" />
 
     <uses-permission android:name="android.permissiion.FLYAUDIOUI.BROADCAST" />
@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
+
 
     <application
         android:allowBackup="true"
@@ -84,9 +85,7 @@
 
         <service
             android:name=".LocationService"
-            android:exported="true"
-            android:persistent="true"
-            android:process=":remote">
+            android:exported="true">
             <intent-filter>
                 <action android:name="app.gavin.carpathrecorder.action.LOCATION" />
             </intent-filter>
@@ -95,7 +94,7 @@
         <service
             android:name=".DaemonService"
             android:exported="true"
-            android:process=":remote">
+            android:process=":DaemonService">
             <intent-filter>
                 <action android:name="app.gavin.carpathrecorder.action.DAEMON" />
             </intent-filter>

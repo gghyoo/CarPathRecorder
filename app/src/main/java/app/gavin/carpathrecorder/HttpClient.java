@@ -18,7 +18,7 @@ public class HttpClient {
     private static AsyncHttpClient getAsyncClient(Context context){
         if(mAsyncClient == null){
             mAsyncClient = new AsyncHttpClient();
-            mAsyncClient.addHeader("Accept-Encoding", "gzip");
+        //    mAsyncClient.addHeader("Accept-Encoding", "gzip");
             PersistentCookieStore myCookieStore = new PersistentCookieStore(context);
             mAsyncClient.setCookieStore(myCookieStore);
         }
@@ -28,7 +28,7 @@ public class HttpClient {
     private static AsyncHttpClient getSyncClient(Context context){
         if(mSyncClient == null){
             mSyncClient = new SyncHttpClient();
-            mSyncClient.addHeader("Accept-Encoding", "gzip");
+        //    mSyncClient.addHeader("Accept-Encoding", "gzip");
             PersistentCookieStore myCookieStore = new PersistentCookieStore(context);
             mSyncClient.setCookieStore(myCookieStore);
         }

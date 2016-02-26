@@ -21,14 +21,11 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
-import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
-import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.autonavi.amap.mapcore.Convert;
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -119,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     }
 
     private void GetApkInfo(){
-        HttpClient.asyncGet(getApplicationContext(), LocationService.ACTION_URL + "getApkInfo", new JsonHttpResponseHandler() {
+        HttpClient.asyncGet(getApplicationContext(), LocationService.WEB_ACTION_URL + "getApkInfo", new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
@@ -144,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                                 if(nv.charAt(0) == 'v')
                                     iv = iv.substring(1);
                                 if(nv.compareTo(iv) > 0){//比较新
-                                    mNewApkUrl = LocationService.ACTION_URL + "getApk/package/" + jo.getString("Package") + "/channel/" + APK_CHANEL;
+                                    mNewApkUrl = LocationService.WEB_ACTION_URL + "getApk/package/" + jo.getString("Package") + "/channel/" + APK_CHANEL;
                                     ShowSnakeBar("检测到最新版本:" + nv, Snackbar.LENGTH_LONG, "开始下载", new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
@@ -235,8 +232,12 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             GetApkInfo();
             return true;
         }
+        else if(id == R.id.action_test){
+
+        }
         return super.onOptionsItemSelected(item);
     }
+
 
     boolean startLocationService(){
         if(LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName()))
@@ -299,16 +300,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         if (mLocationClient == null) {
             mLocationClient = new AMapLocationClient(this);
             AMapLocationClientOption option = new AMapLocationClientOption();
-            //设置定位监听
             mLocationClient.setLocationListener(this);
-            //设置为高精度定位模式
             option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-            //设置定位参数
             mLocationClient.setLocationOption(option);
-            // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
-            // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
-            // 在定位结束后，在合适的生命周期调用onDestroy()方法
-            // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
             mLocationClient.startLocation();
         }
     }

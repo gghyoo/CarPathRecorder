@@ -34,7 +34,7 @@ android {
     defaultConfig {
         applicationId "app.gavin.carpathrecorder"
         minSdkVersion 16
-        targetSdkVersion 16
+        targetSdkVersion 17
         versionCode getVersionCode()
         versionName getVersionName()
     }
@@ -46,56 +46,14 @@ android {
     }
     productFlavors {
     }
-
-    sourceSets { main { jni.srcDirs = ['src/main/jniLibs/'] } }
-
-    android.applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            def outputFile = output.outputFile
-            if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                def fileName = outputFile.name;
-                def fromFile = "./build/outputs/apk/" + fileName
-                def intoFile = "./../apks/"
-                def filePath = "apks/"
-
-                def applicationId = android.defaultConfig.applicationId
-                def versionName = android.defaultConfig.versionName
-                def time = new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
-                def currentBuildType = buildType.name
-                def versionCode = defaultConfig.versionCode
-
-                def appName = "${applicationId}_${currentBuildType}"
-
-                //删除原来的旧文件
-                def apkFiles = fileTree(dir: intoFile, include: '**/*.apk')
-                apkFiles.each {File file ->
-                    if(file.name.contains(currentBuildType)){
-                        println "!! delete " + file.name
-                        file.delete()
-                    }
-                }
-                //复制新的文件
-                println("-- copy from\r\n\t" + fromFile + " \r\nto\r\n\t" + intoFile + appName + ".apk")
-                copy {
-                    from fromFile
-                    into intoFile
-                    rename {
-                        appName + ".apk"
-                    }
-                }
-            }
-        }
-    }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.2.0'
+    compile 'com.android.support:design:23.2.0'
     compile files('libs/AMap_Location_v2.3.0_20160112.jar')
     compile files('libs/android-async-http-1.4.9.jar')
     compile files('libs/httpclient-4.4.1.1.jar')
     compile files('libs/AMap_3DMap_V3.2.0.1_20160122.jar')
-    compile 'com.github.droidwolf:libfileobserver:0.0.1-SNAPSHOT'
+    compile(name:'fileobserver', ext:'aar')
 }
