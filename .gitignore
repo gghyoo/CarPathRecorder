@@ -29,3 +29,6 @@ proguard/
 
 # Android Studio captures folder
 captures/
+
+# Android Studio IDE folder
+.idea
