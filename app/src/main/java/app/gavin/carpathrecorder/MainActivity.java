@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
         aMap.setMyLocationType(AMap.LOCATION_TYPE_MAP_FOLLOW);
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(18));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(16));
     }
 
     private void updateInfos(AMapLocation location){
