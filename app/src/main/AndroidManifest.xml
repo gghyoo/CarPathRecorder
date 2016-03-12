@@ -84,7 +84,6 @@
 
         <service
             android:name=".LocationService"
-            android:exported="true"
             android:process=":remote">
             <intent-filter>
                 <action android:name="app.gavin.carpathrecorder.action.LOCATION" />

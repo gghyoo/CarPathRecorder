@@ -3,6 +3,7 @@ package app.gavin.carpathrecorder;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.PowerManager;
 import android.util.Log;
 
 import com.droidwolf.nativesubprocess.Subprocess;
@@ -18,23 +19,18 @@ public class ObserverSubProcess extends Subprocess{
     static final String mServiceName = "app.gavin.carpathrecorder:remote";
 
     boolean mStopObserveFlag = false;
-    int mCheckInterval = 3 * 1000;
+    int mCheckInterval = 60 * 1000;
 
-    public static boolean isServiceAliveByKeyword(String keyword){
+    public static boolean isServiceAliveByPid(int pid){
         try {
             Process p = Runtime.getRuntime().exec("ps");
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
-                if(line.contains(keyword)) {
-                    int pid = android.os.Process.myPid();
-                    Log.d(ObserverSubProcess.class.getSimpleName(),"Current PID:" + pid + " PS Info:" + line);
-                    String [] words = line.split("\\s+");
-                    //过滤掉自己
-                    if(Integer.parseInt(words[1]) != pid)
-                        return true;
-                }
+                String [] words = line.split("\\s+");
+                if (words.length > 0 && words[1].matches("\\d+") && Integer.parseInt(words[1]) == pid)
+                    return true;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,21 +57,20 @@ public class ObserverSubProcess extends Subprocess{
 
     @Override
     public void runOnSubprocess() {
-        int cnt = 0;
-        Log.d(ObserverSubProcess.class.getSimpleName(), "runOnSubprocess @PID:" + android.os.Process.myPid());
-
+        Log.d(ObserverSubProcess.class.getSimpleName(), "runOnSubprocess @PID:" + android.os.Process.myPid() + " Parent PID:" + getParentPid());
         while(!mStopObserveFlag) {
             try {
                 Log.d(ObserverSubProcess.class.getSimpleName(), "Checking Observed Service Status");
 
                 //Check Service Status
-                Log.d(getClass().getSimpleName(), "Check Service Status " + cnt++ + " @PID:" + android.os.Process.myPid());
-                while (!mStopObserveFlag && isServiceAliveByKeyword(mServiceName)) {
+                Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
+                while (!mStopObserveFlag && isServiceAliveByPid(getParentPid())) {
                     Thread.sleep(mCheckInterval);
-                    Log.d(getClass().getSimpleName(), "Check Service Status " + cnt++ + " @PID:" + android.os.Process.myPid());
-                    if (cnt > 30)
-                        mStopObserveFlag = true;
+                    Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
                 }
+
+                if(mStopObserveFlag)
+                    break;
 
                 Log.d(getClass().getSimpleName(), "Service is Not Alive");
                 //Service Not alive

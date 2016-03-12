@@ -38,8 +38,6 @@ public class LocationService extends IntentService implements AMapLocationListen
     private static final String TAG = "LocationService";
     private static final String SITE_URL = "http://s.imscv.com/cpr/";
     public static final String WEB_ACTION_URL = SITE_URL + "Recorder/Index/";
-    public static final String SERVICE_ACTION = "app.gavin.carpathrecorder.action.LOCATION";
-    private static final String ALARM_ACTION = "app.gavin.carpathrecorder.action.TIMER";
     private static final int NOTIFICATION_ID = 11;
 
     private static final int MAX_LOCATION_DELAY = 10;
@@ -174,23 +172,6 @@ public class LocationService extends IntentService implements AMapLocationListen
         }
         return false;
     }
-    public static void invokeTimerService(Context context){
-        Log.d("LocationService", "LocationService wac called..");
-        AlarmManager am = (AlarmManager)context.getSystemService(ALARM_SERVICE);
-        Intent intent = new Intent(context, BootReceiver.class);
-        intent.setAction(ALARM_ACTION);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        long now = System.currentTimeMillis();
-        am.setInexactRepeating(AlarmManager.RTC_WAKEUP, now, 30000, pi);
-    }
-    public static void cancelAlarmManager(Context context) {
-        Log.d("LocationService", "cancel AlarmManager to start ");
-        Intent intent = new Intent(context,BootReceiver.class);
-        intent.setAction(LocationService.ALARM_ACTION);
-        PendingIntent pendingIntent=PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarm=(AlarmManager)context.getSystemService(Activity.ALARM_SERVICE);
-        alarm.cancel(pendingIntent);
-    }
 
     @Override
     public void onCreate() {
@@ -203,7 +184,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         setupAmpSdk();
 
         mLocalDatabase = new LocationDatabase(getApplicationContext());
-        invokeTimerService(getApplicationContext());
+        //invokeTimerService(getApplicationContext());
 
         Log.d(TAG, TAG + " call onCreate @PID:" + android.os.Process.myPid());
 
@@ -277,12 +258,13 @@ public class LocationService extends IntentService implements AMapLocationListen
                 if(aMapLocation.getLocationType() != AMapLocation.LOCATION_TYPE_SAME_REQ) {
                     //根据定位类型，更新速度
                     mLocationDelay = getLocationDelay(aMapLocation);
-                    if (mLocationDelayCnt++ == 0)
+                    if (mLocationDelayCnt++ == 0) {
                         mLastInsertID = mLocalDatabase.addLocationPoint(mLocationInfo);//写入数据库
+                        updateNotification();
+                    }
                     if (mLocationDelayCnt >= mLocationDelay)
                         mLocationDelayCnt = 0;
                 }
-
                 mLocationStatus = true;
             } else {
                 //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
@@ -291,7 +273,6 @@ public class LocationService extends IntentService implements AMapLocationListen
                         + aMapLocation.getErrorInfo());
                 mLocationStatus = false;
             }
-            updateNotification();
         }
     }
 }

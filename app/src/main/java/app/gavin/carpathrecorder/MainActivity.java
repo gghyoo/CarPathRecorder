@@ -188,8 +188,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             setUpMap();
         }
 
-        ObserverSubProcess.isServiceAliveByKeyword("gavin");
-
         startLocationService();
 
         mDownloadInfoBar = (LinearLayout) findViewById(R.id.downloadInfoBar);
@@ -236,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         else if(id == R.id.action_close_service){
             EnableObserve(false);
             stopLocationService();
-            LocationService.cancelAlarmManager(getApplicationContext());
             return true;
         }
         else if(id == R.id.action_update_apk){
@@ -249,9 +246,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
 
     boolean startLocationService(){
-        if(LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName()))
-            stopLocationService();
-
         Intent intent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
         intent.setPackage(getPackageName());
         startService(intent);
