@@ -57,7 +57,7 @@ dependencies {
     compile files('libs/android-async-http-1.4.9.jar')
     compile files('libs/httpclient-4.4.1.1.jar')
     compile files('libs/AMap_3DMap_V3.2.0.1_20160122.jar')
-    compile(name:'fileobserver', ext:'aar')
+    compile(name:'subprocess', ext:'aar')
 }
 
 build.doLast{

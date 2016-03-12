@@ -22,7 +22,6 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -85,22 +84,15 @@
 
         <service
             android:name=".LocationService"
-            android:exported="true">
+            android:exported="true"
+            android:process=":remote">
             <intent-filter>
                 <action android:name="app.gavin.carpathrecorder.action.LOCATION" />
             </intent-filter>
         </service>
 
-        <service
-            android:name=".DaemonService"
-            android:exported="true"
-            android:process=":DaemonService">
-            <intent-filter>
-                <action android:name="app.gavin.carpathrecorder.action.DAEMON" />
-            </intent-filter>
-        </service>
-
         <service android:name="com.amap.api.location.APSService" />
+
     </application>
 
 </manifest>

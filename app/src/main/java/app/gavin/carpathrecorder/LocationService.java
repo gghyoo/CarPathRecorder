@@ -20,7 +20,6 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 
-import com.droidwolf.fix.FileObserver;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -31,7 +30,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -66,39 +64,6 @@ public class LocationService extends IntentService implements AMapLocationListen
     private boolean mLocationStatus = false;
     private int mLocationDelay = 1;
     private int mLocationDelayCnt = 0;
-
-    private boolean mStopWatch = false;
-    private Thread mWatchThread = new Thread(new Runnable() {
-        FileObserver mProcessObserver;
-        private final Semaphore mSemaphore = new Semaphore(0);
-        @Override
-        public void run() {
-            Log.d(TAG, "Running watch thread");
-            while(!mStopWatch){
-                int pid = DaemonService.waitAndStartService(getApplicationContext(),
-                        DaemonService.class.getName(), DaemonService.SERVICE_ACTION);
-
-                //建立FileObserver，监控进程是否存在
-                mProcessObserver = new ProcessObserver(pid, new ProcessObserver.OnProcessExit() {
-                    @Override
-                    public void onProcessExit() {
-                        mSemaphore.release();
-                        mProcessObserver.stopWatching();
-                    }
-                });
-                try {
-                    mProcessObserver.startWatching();
-                    Log.d(TAG, "Wait " + pid + " to be killed...");
-                    mSemaphore.acquire();
-                    Log.d(TAG, "======== Process " + pid + " has been killed! ========");
-                    DaemonService.startServiceByAction(getApplicationContext(), DaemonService.SERVICE_ACTION);
-                    mProcessObserver = null;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
 
     public LocationService() {
         super("LocationService");
@@ -241,6 +206,8 @@ public class LocationService extends IntentService implements AMapLocationListen
         invokeTimerService(getApplicationContext());
 
         Log.d(TAG, TAG + " call onCreate @PID:" + android.os.Process.myPid());
+
+        ObserverSubProcess.startObserver(getApplicationContext());
     }
     @Override
     public void onDestroy() {
@@ -253,6 +220,8 @@ public class LocationService extends IntentService implements AMapLocationListen
             mLocationOption = null;
         }
 
+        System.exit(0);
+
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -262,7 +231,6 @@ public class LocationService extends IntentService implements AMapLocationListen
     }
     @Override
     protected void onHandleIntent(Intent intent) {
-        mWatchThread.start();
         if (intent != null) {
             while(!mStopUpdateData) {
                 try {

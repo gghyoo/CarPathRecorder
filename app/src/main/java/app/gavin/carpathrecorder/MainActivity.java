@@ -1,6 +1,7 @@
 package app.gavin.carpathrecorder;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -186,6 +187,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             aMap = mapView.getMap();
             setUpMap();
         }
+
+        ObserverSubProcess.isServiceAliveByKeyword("gavin");
+
         startLocationService();
 
         mDownloadInfoBar = (LinearLayout) findViewById(R.id.downloadInfoBar);
@@ -211,20 +215,27 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         mapView.onResume();
     }
 
+    public void EnableObserve(boolean flag){
+        SharedPreferences settings = getApplicationContext().getSharedPreferences("setting", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("EnableObserve", flag);
+        editor.commit();
+    }
+
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_service) {
-            if(!startLocationService())
-                Log.d(TAG, getString(R.string.service_is_running));
-           // LocationService.invokeTimerService(getApplicationContext());
+            EnableObserve(true);
+            startLocationService();
             return true;
         }
         else if(id == R.id.action_close_service){
-            if(!stopLocationService())
-                Log.d(TAG, getString(R.string.service_is_not_running));
+            EnableObserve(false);
+            stopLocationService();
             LocationService.cancelAlarmManager(getApplicationContext());
             return true;
         }
@@ -232,16 +243,15 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             GetApkInfo();
             return true;
         }
-        else if(id == R.id.action_test){
 
-        }
         return super.onOptionsItemSelected(item);
     }
 
 
     boolean startLocationService(){
         if(LocationService.isServiceRunning(getApplicationContext(), LocationService.class.getName()))
-            return false;
+            stopLocationService();
+
         Intent intent = new Intent("app.gavin.carpathrecorder.action.LOCATION");
         intent.setPackage(getPackageName());
         startService(intent);

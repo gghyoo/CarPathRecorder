@@ -21,5 +21,6 @@
     <string name="degree">%1$s&#160;°</string>
     <string name="kmph">%1$s&#160;km/h</string>
     <string name="two_values">%1$s,%2$s</string>
-    <string name="test">测试</string>
+    <string name="stop_observe">停止守护</string>
+    <string name="start_observe">启动守护</string>
 </resources>
