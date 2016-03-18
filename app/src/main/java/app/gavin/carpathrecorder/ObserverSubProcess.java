@@ -38,6 +38,26 @@ public class ObserverSubProcess extends Subprocess{
         return false;
     }
 
+    public static boolean isServiceAliveByName(String name){
+        try {
+            Process p = Runtime.getRuntime().exec("ps");
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()));
+            String line;
+            int pid = android.os.Process.myPid();
+            while ((line = in.readLine()) != null) {
+                if(line.contains(name)) {
+                    String[] words = line.split("\\s+");
+                    if ((words.length > 0) && words[1].matches("\\d+") && (Integer.parseInt(words[1]) != pid))
+                        return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static boolean startObserver(Context context){
         SharedPreferences settings = context.getSharedPreferences("setting", 0);
         if(settings.getBoolean("EnableObserve", true)){
@@ -64,7 +84,7 @@ public class ObserverSubProcess extends Subprocess{
 
                 //Check Service Status
                 Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
-                while (!mStopObserveFlag && isServiceAliveByPid(getParentPid())) {
+                while (!mStopObserveFlag && isServiceAliveByName(mServiceName)) {
                     Thread.sleep(mCheckInterval);
                     Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
                 }

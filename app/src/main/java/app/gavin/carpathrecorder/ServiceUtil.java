@@ -47,7 +47,9 @@ public class ServiceUtil {
     }
 
     public static void startServiceByAction(Context context, String action) {
-        Intent newIntent = new Intent(action);
+        Intent newIntent = new Intent();
+        newIntent.setAction(action);
+        newIntent.setPackage(context.getPackageName());
         context.startService(newIntent);
     }
 
