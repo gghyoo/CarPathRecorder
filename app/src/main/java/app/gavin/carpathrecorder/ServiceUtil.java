@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -69,5 +70,13 @@ public class ServiceUtil {
         PendingIntent pendingIntent=PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm=(AlarmManager)context.getSystemService(Activity.ALARM_SERVICE);
         alarm.cancel(pendingIntent);
+    }
+
+    public static void startServiceByAM(String name){
+        try {
+            Runtime.getRuntime().exec("am startservice --user 0 -n " + name);
+        } catch (IOException e) {
+            Log.e(ObserverSubProcess.class.getSimpleName(), "Start Service Failed with message: " + e.getMessage());
+        }
     }
 }

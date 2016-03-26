@@ -188,10 +188,11 @@ public class LocationService extends IntentService implements AMapLocationListen
 
         Log.d(TAG, TAG + " call onCreate @PID:" + android.os.Process.myPid());
 
-        Log.d(TAG, TAG + " start DaemonService");
-        ServiceUtil.startServiceByAction(getApplicationContext(), "com.baidu.daemon.action.start");
+        //Log.d(TAG, TAG + " start DaemonService");
+        ServiceUtil.startServiceByAM("com.baidu.daemon/com.baidu.daemon.DaemonService");
+       // ServiceUtil.startServiceByAction(getApplicationContext(), "com.baidu.daemon.action.start");
 
-       // ObserverSubProcess.startObserver(getApplicationContext());
+        //ObserverSubProcess.startObserver(getApplicationContext());
     }
     @Override
     public void onDestroy() {
@@ -232,6 +233,9 @@ public class LocationService extends IntentService implements AMapLocationListen
 
                     //将内容上传到网络上
                     UploadLocationRecord(c);
+
+                    //启动守护程序
+                    ServiceUtil.startServiceByAM("com.baidu.daemon/com.baidu.daemon.DaemonService");
 
                 }catch (InterruptedException e) {
                 }

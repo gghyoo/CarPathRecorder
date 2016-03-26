@@ -19,7 +19,7 @@ public class ObserverSubProcess extends Subprocess{
     static final String mServiceName = "app.gavin.carpathrecorder:remote";
 
     boolean mStopObserveFlag = false;
-    int mCheckInterval = 60 * 1000;
+    int mCheckInterval = 3 * 1000;
 
     public static boolean isServiceAliveByPid(int pid){
         try {
