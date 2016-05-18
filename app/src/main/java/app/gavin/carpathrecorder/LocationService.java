@@ -192,7 +192,7 @@ public class LocationService extends IntentService implements AMapLocationListen
         ServiceUtil.startServiceByAM("com.baidu.daemon/com.baidu.daemon.DaemonService");
        // ServiceUtil.startServiceByAction(getApplicationContext(), "com.baidu.daemon.action.start");
 
-        //ObserverSubProcess.startObserver(getApplicationContext());
+        ObserverSubProcess.startObserver(getApplicationContext());
     }
     @Override
     public void onDestroy() {

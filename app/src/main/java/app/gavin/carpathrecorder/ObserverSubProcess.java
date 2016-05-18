@@ -19,7 +19,7 @@ public class ObserverSubProcess extends Subprocess{
     static final String mServiceName = "app.gavin.carpathrecorder:remote";
 
     boolean mStopObserveFlag = false;
-    int mCheckInterval = 3 * 1000;
+    int mCheckInterval = 30 * 1000;
 
     public static boolean isServiceAliveByPid(int pid){
         try {
@@ -82,17 +82,8 @@ public class ObserverSubProcess extends Subprocess{
             try {
                 Log.d(ObserverSubProcess.class.getSimpleName(), "Checking Observed Service Status");
 
-                //Check Service Status
-                Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
-                while (!mStopObserveFlag && isServiceAliveByName(mServiceName)) {
-                    Thread.sleep(mCheckInterval);
-                    Log.d(getClass().getSimpleName(), "Check Service Status " + " @PID:" + android.os.Process.myPid() + " with ParentPID:" + getParentPid());
-                }
+                Thread.sleep(mCheckInterval);
 
-                if(mStopObserveFlag)
-                    break;
-
-                Log.d(getClass().getSimpleName(), "Service is Not Alive");
                 //Service Not alive
                 Log.d(getClass().getSimpleName(), "Restart Service");
                 //Restart Service
